@@ -81,7 +81,7 @@ yarn start
 npm start
 ```
 
-2. The application will now be accessible at `http://localhost:3000`
+2. The application will now be accessible at `http://localhost:3001`
 
 ## Deployment Workflow
 1. Build Frontend
@@ -91,7 +91,7 @@ npm start
 ## Environment Configuration
 Ensure the following environment variables are set in your backend:
 ```
-PORT=3000
+PORT=3001
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 ```

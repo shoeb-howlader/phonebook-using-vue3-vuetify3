@@ -240,7 +240,7 @@
                 <!-- Image Container -->
                 <div class="image-container">
                   <v-img
-                    :src="'http://localhost:3000'+contact.image || 'https://via.placeholder.com/150'"
+                    :src="'http://localhost:3001'+contact.image || 'https://via.placeholder.com/150'"
                     class="contact-image"
                     max-height="300"
                     :aspect-ratio="4/4"
@@ -413,7 +413,7 @@ const setupAxiosInterceptors = () => {
 // Login Method
 const login = async () => {
   try {
-    const response = await axios.post('http://localhost:3000/api/login', loginCredentials.value);
+    const response = await axios.post('http://localhost:3001/api/login', loginCredentials.value);
     localStorage.setItem('adminToken', response.data.token);
     setupAxiosInterceptors();
     loginDialog.value = false;
@@ -459,7 +459,7 @@ const filteredContacts = computed(() => {
 const fetchContacts = async () => {
   loading.value = true;
   try {
-    const response = await axios.get('http://localhost:3000/api/contacts');
+    const response = await axios.get('http://localhost:3001/api/contacts');
     contacts.value = response.data;
   } catch (error) {
     console.error('Error fetching contacts:', error);
@@ -525,9 +525,9 @@ const saveContact = async () => {
 
   try {
     if (editedId.value) {
-      await axios.put(`http://localhost:3000/api/contacts/${editedId.value}`, formDataToSend);
+      await axios.put(`http://localhost:3001/api/contacts/${editedId.value}`, formDataToSend);
     } else {
-      await axios.post('http://localhost:3000/api/contacts', formDataToSend);
+      await axios.post('http://localhost:3001/api/contacts', formDataToSend);
     }
     
     await fetchContacts();
@@ -545,7 +545,7 @@ const deleteContact = async (contact) => {
   
   loading.value = true;
   try {
-    await axios.delete(`http://localhost:3000/api/contacts/${contact._id}`);
+    await axios.delete(`http://localhost:3001/api/contacts/${contact._id}`);
     await fetchContacts();
   } catch (error) {
     console.error('Error deleting contact:', error);
