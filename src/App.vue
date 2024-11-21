@@ -1,6 +1,4 @@
 <template>
-
-
   <v-app class="bg-gray-50">
     <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg">
     <!-- App Bar -->
@@ -240,7 +238,7 @@
                 <!-- Image Container -->
                 <div class="image-container">
                   <v-img
-                    :src="'http://localhost:3001'+contact.image || 'https://via.placeholder.com/150'"
+                    :src="contact.image ? `${apiUrl}/${contact.image.replace(/^\//, '')}` : 'https://via.placeholder.com/150'"
                     class="contact-image"
                     max-height="300"
                     :aspect-ratio="4/4"
@@ -371,6 +369,7 @@ const dialogVisible = ref(false);
 const loading = ref(false);
 const imageFile = ref(null);
 const editedId = ref(null);
+const apiUrl=process.env.VUE_APP_API_URL || 'http://localhost:3001';
 
 const loginCredentials = ref({
   username: '',
@@ -413,7 +412,7 @@ const setupAxiosInterceptors = () => {
 // Login Method
 const login = async () => {
   try {
-    const response = await axios.post('http://localhost:3001/api/login', loginCredentials.value);
+    const response = await axios.post(`${apiUrl}/api/login`, loginCredentials.value);
     localStorage.setItem('adminToken', response.data.token);
     setupAxiosInterceptors();
     loginDialog.value = false;
@@ -459,7 +458,7 @@ const filteredContacts = computed(() => {
 const fetchContacts = async () => {
   loading.value = true;
   try {
-    const response = await axios.get('http://localhost:3001/api/contacts');
+    const response = await axios.get(`${apiUrl}/api/contacts`);
     contacts.value = response.data;
   } catch (error) {
     console.error('Error fetching contacts:', error);
@@ -525,9 +524,9 @@ const saveContact = async () => {
 
   try {
     if (editedId.value) {
-      await axios.put(`http://localhost:3001/api/contacts/${editedId.value}`, formDataToSend);
+      await axios.put(`${apiUrl}/api/contacts/${editedId.value}`, formDataToSend);
     } else {
-      await axios.post('http://localhost:3001/api/contacts', formDataToSend);
+      await axios.post(`${apiUrl}/api/contacts`, formDataToSend);
     }
     
     await fetchContacts();
@@ -545,7 +544,7 @@ const deleteContact = async (contact) => {
   
   loading.value = true;
   try {
-    await axios.delete(`http://localhost:3001/api/contacts/${contact._id}`);
+    await axios.delete(`${apiUrl}/api/contacts/${contact._id}`);
     await fetchContacts();
   } catch (error) {
     console.error('Error deleting contact:', error);
