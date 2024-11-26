@@ -1,13 +1,40 @@
 <template>
   <v-app class="bg-gray-50">
-    <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg">
+    <!-- Snackbar for notifications -->
+    <v-snackbar v-model="snackbar.visible" :color="snackbar.color" top>
+      {{ snackbar.message }}
+      <template v-slot:action="{ attrs }">
+        <v-btn text v-bind="attrs" @click="snackbar.visible = false">Close</v-btn>
+      </template>
+    </v-snackbar>
+
+    <!-- Delete Confirmation Dialog -->
+<v-dialog v-model="confirmDeleteDialog" width="400">
+  <v-card>
+    <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+    <v-card-text>
+      Are you sure you want to delete "{{ confirmDeleteContact.name }}"?
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn @click="confirmDeleteDialog = false" color="grey">Cancel</v-btn>
+      <v-btn @click="confirmDeletion" color="red">Delete</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
+    <v-parallax
+    dark
+    src="https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg"
+  >
     <!-- App Bar -->
     <v-app-bar 
      image="https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg"
       dark
       prominent
     >
-    <h-spacer></h-spacer>
+    
+
       <template v-slot:prepend>
         <v-icon class="mr-3">mdi-phone-book</v-icon>
       </template>
@@ -59,7 +86,7 @@
         append-inner-icon="mdi-magnify"
          v-model="search"
         density="default"
-        label="Search contacts by name, phone, designation or mobile"
+        label="Search contacts by name, phone, designation"
         variant="solo"
         color="primary"
         hide-details
@@ -170,8 +197,7 @@
                       v-model="formData.phone"
                       label="Phone*"
                       prepend-icon="mdi-phone"
-                      required
-                      :rules="phoneRules"
+                      
                     ></v-text-field>
                   </v-col>
 
@@ -180,8 +206,7 @@
                       v-model="formData.mobile"
                       label="Mobile*"
                       prepend-icon="mdi-cellphone"
-                      required
-                      :rules="mobileRules"
+                      
                     ></v-text-field>
                   </v-col>
 
@@ -230,7 +255,7 @@
           >
             <v-card 
               class="flex-grow-1 transition-all hover:shadow-2xl rounded-xl overflow-hidden mx-auto"
-              elevation="3"
+              elevation="24"
               hover
               max-width="400"
             >
@@ -238,7 +263,7 @@
                 <!-- Image Container -->
                 <div class="image-container">
                   <v-img
-                    :src="contact.image ? `${apiUrl}/${contact.image.replace(/^\//, '')}` : 'https://via.placeholder.com/150'"
+                    :src="contact.image ? `${apiUrl}/${contact.image.replace(/^\//, '')}` : 'https://fakeimg.pl/150x150?text=No+image+uploaded&font_size=20'"
                     class="contact-image"
                     max-height="300"
                     :aspect-ratio="4/4"
@@ -262,14 +287,14 @@
                 </div>
 
                 <!-- Name and Designation Section -->
-                <v-card-item class="name-section bg-primary py-2">
-                  <v-card-title class="text-center text-white pa-0 text-h6 font-weight-bold">
-                    {{ contact.name }}
-                  </v-card-title>
-                  <v-card-subtitle class="text-center text-white-darken-1 mt-1 pb-0">
-                    {{ contact.designation }}
-                  </v-card-subtitle>
-                </v-card-item>
+<v-card-item class="name-section bg-primary py-2">
+  <v-card-title class="text-center text-white pa-0 text-h6 font-weight-bold name-title">
+    {{ contact.name }}
+  </v-card-title>
+  <v-card-subtitle class="text-center text-white-darken-1 mt-1 pb-0 designation-subtitle">
+    {{ contact.designation }}
+  </v-card-subtitle>
+</v-card-item>
 
                 <!-- Contact Details Section -->
                 <v-card-text class="contact-details pa-4">
@@ -370,6 +395,24 @@ const loading = ref(false);
 const imageFile = ref(null);
 const editedId = ref(null);
 const apiUrl=process.env.VUE_APP_API_URL || 'http://localhost:3001';
+// State for confirmation dialog
+const confirmDeleteDialog = ref(false);
+const confirmDeleteContact = ref(null);
+
+// Snackbar state
+const snackbar = ref({
+  visible: false,
+  message: '',
+  color: 'success',
+});
+
+
+// Function to show snackbar
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value.message = message;
+  snackbar.value.color = color;
+  snackbar.value.visible = true;
+};
 
 const loginCredentials = ref({
   username: '',
@@ -416,8 +459,9 @@ const login = async () => {
     localStorage.setItem('adminToken', response.data.token);
     setupAxiosInterceptors();
     loginDialog.value = false;
+    showSnackbar('Login successful!', 'success');
   } catch (error) {
-    alert('Login failed');
+    showSnackbar('Login failed', 'error');
   }
 };
 
@@ -426,6 +470,7 @@ const logout = () => {
   localStorage.removeItem('adminToken');
   delete axios.defaults.headers.common['Authorization'];
   isAdmin.value = false;
+  showSnackbar('Logout successful!', 'success');
 };
 
 // Toggle Admin View
@@ -443,8 +488,7 @@ const filteredContacts = computed(() => {
     .filter(contact =>
       contact.name.toLowerCase().includes(search.value.toLowerCase()) ||
        contact.designation.toLowerCase().includes(search.value.toLowerCase()) ||
-      contact.phone.includes(search.value) ||
-      contact.mobile.includes(search.value)
+      contact.phone.includes(search.value) 
     )
     .sort((a, b) => {
       const positionA = parseInt(a.position) || Number.MAX_SAFE_INTEGER;
@@ -460,9 +504,10 @@ const fetchContacts = async () => {
   try {
     const response = await axios.get(`${apiUrl}/api/contacts`);
     contacts.value = response.data;
+    //showSnackbar('Contacts fetched successfully!', 'success');
   } catch (error) {
     console.error('Error fetching contacts:', error);
-    alert('Failed to fetch contacts');
+    showSnackbar('Failed to fetch contacts', 'error');
   } finally {
     loading.value = false;
   }
@@ -508,16 +553,17 @@ const closeDialog = () => {
   imageFile.value = null;
 };
 
+// saving contac
 const saveContact = async () => {
   loading.value = true;
-  
+
   const formDataToSend = new FormData();
   formDataToSend.append('name', formData.value.name);
   formDataToSend.append('phone', formData.value.phone);
   formDataToSend.append('mobile', formData.value.mobile);
   formDataToSend.append('position', formData.value.position);
   formDataToSend.append('designation', formData.value.designation);
-  
+
   if (imageFile.value) {
     formDataToSend.append('image', imageFile.value);
   }
@@ -525,34 +571,45 @@ const saveContact = async () => {
   try {
     if (editedId.value) {
       await axios.put(`${apiUrl}/api/contacts/${editedId.value}`, formDataToSend);
+      showSnackbar('Contact updated successfully!', 'success');
     } else {
       await axios.post(`${apiUrl}/api/contacts`, formDataToSend);
+      showSnackbar('Contact added successfully!', 'success');
     }
-    
+
     await fetchContacts();
     closeDialog();
   } catch (error) {
     console.error('Error saving contact:', error);
-    alert('Failed to save contact');
+    showSnackbar('Failed to save contact', 'error');
   } finally {
     loading.value = false;
   }
 };
 
-const deleteContact = async (contact) => {
-  if (!confirm('Are you sure you want to delete this contact?')) return;
-  
+
+// Method to delete contact
+const deleteContact = (contact) => {
+  confirmDeleteContact.value = contact; // Store the contact to be deleted
+  confirmDeleteDialog.value = true; // Show the confirmation dialog
+};
+
+// Confirm deletion
+const confirmDeletion = async () => {
   loading.value = true;
   try {
-    await axios.delete(`${apiUrl}/api/contacts/${contact._id}`);
+    await axios.delete(`${apiUrl}/api/contacts/${confirmDeleteContact.value._id}`);
     await fetchContacts();
+    showSnackbar('Contact deleted successfully!', 'success');
   } catch (error) {
     console.error('Error deleting contact:', error);
-    alert('Failed to delete contact');
+    showSnackbar('Failed to delete contact', 'error');
   } finally {
+    confirmDeleteDialog.value = false; // Hide the confirmation dialog
     loading.value = false;
   }
 };
+
 
 // Initialize
 onMounted(() => {
@@ -681,5 +738,17 @@ onMounted(() => {
 
 .v-card:hover {
   transform: translateY(-5px);
+}
+.name-title, .designation-subtitle {
+  overflow: visible;        /* Allow overflow to be visible */
+  text-overflow: clip;     /* No ellipsis */
+  white-space: normal;      /* Allow text to wrap */
+  max-width: 100%;         /* Ensure it doesn't exceed the container */
+  word-wrap: break-word;   /* Break long words if necessary */
+}
+@media (max-width: 600px) {
+  .name-title, .designation-subtitle {
+    font-size: 0.9rem; /* Adjust font size for smaller screens */
+  }
 }
 </style>

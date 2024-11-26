@@ -96,6 +96,10 @@ MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 ```
 
+## Electron Desktop App Making
+```bash
+npm run make
+```
 ## Key Components
 - 🔐 Admin Login Dialog
 - 📇 Contact List with Grid View

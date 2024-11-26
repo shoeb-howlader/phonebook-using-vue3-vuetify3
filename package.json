@@ -1,16 +1,24 @@
 {
-  "name": "phonebook-using-vue3-vuetify3",
+  "name": "KDA-Phonebook",
   "author": "Md Shoeb Howlader",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "It's a simple phonebook app",
+  "main": "main.js",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "electron": "electron .",
+    "build:electron": "electron-builder",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "dependencies": {
     "@mdi/font": "5.9.55",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
+    "electron-squirrel-startup": "^1.0.1",
     "roboto-fontface": "*",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
@@ -19,10 +27,19 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.5.0",
+    "@electron-forge/maker-deb": "^7.5.0",
+    "@electron-forge/maker-rpm": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
+    "@electron-forge/plugin-fuses": "^7.5.0",
+    "@electron/fuses": "^1.8.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "electron": "^33.2.0",
     "vue-cli-plugin-vuetify": "~2.5.8",
     "webpack-plugin-vuetify": "^2.0.0-alpha.0"
   },
@@ -31,5 +48,36 @@
     "last 2 versions",
     "not dead",
     "not ie 11"
+  ],
+  "build": {
+    "appId": "com.yourname.phonebook",
+    "productName": "KDA Phonebook",
+    "files": [
+      "main.js",
+      "package.json",
+      "node_modules/**/*",
+      "dist/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "makers": [
+    {
+      "name": "@electron-forge/maker-squirrel",
+      "config": {
+        "name": "KDA-Phonebook",
+        "icon": "logo.ico",
+        "setupIcon": "logo.ico"
+      }
+    }
   ]
 }
